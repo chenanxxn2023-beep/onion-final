@@ -1,0 +1,98 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 270 100% 99%;
+    --foreground: 263 70% 15%;
+    --card: 0 0% 100%;
+    --card-foreground: 263 70% 15%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 263 70% 15%;
+    --primary: 262 83% 58%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 263 90% 76%;
+    --secondary-foreground: 263 70% 15%;
+    --muted: 260 30% 96%;
+    --muted-foreground: 260 10% 40%;
+    --accent: 263 90% 86%;
+    --accent-foreground: 263 70% 15%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 260 30% 90%;
+    --input: 260 30% 90%;
+    --ring: 262 83% 58%;
+    --radius: 0.75rem;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+  
+  .glass-card {
+    @apply bg-white/80 backdrop-blur-sm border border-violet-100 shadow-lg shadow-violet-500/5;
+  }
+  
+  .gradient-text {
+    @apply bg-gradient-to-r from-violet-600 via-purple-600 to-violet-700 bg-clip-text text-transparent;
+  }
+  
+  .hover-lift {
+    @apply transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-violet-500/10;
+  }
+}
+
+/* Custom scrollbar for violet theme */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-violet-50 rounded-full;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-violet-300 rounded-full;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-violet-400;
+}
+
+/* Smooth animations */
+.animate-stagger > * {
+  animation: slideUp 0.5s ease-out forwards;
+  opacity: 0;
+}
+
+.animate-stagger > *:nth-child(1) { animation-delay: 0ms; }
+.animate-stagger > *:nth-child(2) { animation-delay: 100ms; }
+.animate-stagger > *:nth-child(3) { animation-delay: 200ms; }
+.animate-stagger > *:nth-child(4) { animation-delay: 300ms; }
+.animate-stagger > *:nth-child(5) { animation-delay: 400ms; }
+.animate-stagger > *:nth-child(6) { animation-delay: 500ms; }
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
