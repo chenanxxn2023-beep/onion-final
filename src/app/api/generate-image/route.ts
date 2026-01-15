@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { IP_LIBRARY } from '@/lib/ip-library'; // 👈 必须引入狗蛋的图库
+import { IP_LIBRARY } from '@/lib/ip-library'; 
 
-export const maxDuration = 60;
+export const maxDuration = 60; // 延长超时时间
 
 // ============================================
-// 🐶 狗蛋专属版：中文指令 + 参考图 + 动态姿态
+// 🐶 最终版：狗蛋主演 + 深度诊断模式
 // ============================================
 
 export async function POST(request: NextRequest) {
@@ -12,20 +12,31 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { title, content, aspectRatio } = body;
 
-    // 1. 检查环境变量
+    // =====================================================
+    // 🕵️‍♀️ 1. 环境变量深度诊断 (报错会直接告诉你是缺了哪一个)
+    // =====================================================
     const DS_KEY = process.env.DEEPSEEK_API_KEY;
     const IMG_HOST = process.env.NEXT_PUBLIC_IMAGE_API_HOST;
     const IMG_KEY = process.env.IMAGE_API_KEY;
     const IMG_TENANT = process.env.IMAGE_TENANT_ID;
 
-    if (!DS_KEY || !IMG_HOST || !IMG_KEY) {
-      throw new Error('环境变量缺失，请检查 .env.local');
+    const missingKeys = [];
+    if (!DS_KEY) missingKeys.push("DEEPSEEK_API_KEY");
+    if (!IMG_HOST) missingKeys.push("NEXT_PUBLIC_IMAGE_API_HOST");
+    if (!IMG_KEY) missingKeys.push("IMAGE_API_KEY");
+
+    if (missingKeys.length > 0) {
+      const errorMsg = `❌ 致命错误: Vercel 环境变量缺失: ${missingKeys.join(", ")}`;
+      console.error(errorMsg);
+      throw new Error(errorMsg);
     }
 
-    // 2. 准备参考图 (狗蛋的照片)
-    // 我们取 IP_LIBRARY 里的前 1-2 张图作为“长相参考”
-    // 假设 IP_LIBRARY 里的 src 是相对路径，我们需要拼接成绝对路径
+    // =====================================================
+    // 🖼️ 2. 准备狗蛋参考图
+    // =====================================================
     const publicHost = process.env.NEXT_PUBLIC_HOST || 'https://onion-final-smlp.vercel.app';
+    
+    // 提取 IP 库的前 2 张图，并确保是绝对路径
     const referenceImages = IP_LIBRARY.slice(0, 2).map(img => {
       if (img.src.startsWith('http')) return img.src;
       return `${publicHost}${img.src}`;
@@ -34,7 +45,7 @@ export async function POST(request: NextRequest) {
     console.log(`🐶 [1/2] 正在让 DeepSeek 设计狗蛋的动作 (中文)...`);
 
     // =====================================================
-    // 第一步：DeepSeek 设计动作 (中文)
+    // 🤖 3. DeepSeek 导演设计动作
     // =====================================================
     const dsResponse = await fetch('https://api.deepseek.com/chat/completions', {
       method: 'POST',
@@ -54,11 +65,14 @@ export async function POST(request: NextRequest) {
             content: `标题：${title}\n内容片段：${content.substring(0, 200)}`
           }
         ],
-        temperature: 0.8 // 稍微高一点，让姿态更丰富
+        temperature: 0.8
       })
     });
 
-    if (!dsResponse.ok) throw new Error('DeepSeek 调用失败');
+    if (!dsResponse.ok) {
+      const errText = await dsResponse.text();
+      throw new Error(`DeepSeek 调用失败: ${dsResponse.status} - ${errText}`);
+    }
 
     const dsData = await dsResponse.json();
     const actionPrompt = dsData.choices?.[0]?.message?.content || "";
@@ -67,7 +81,7 @@ export async function POST(request: NextRequest) {
     console.log(`✨ 动作设计: ${cleanPrompt}`);
 
     // =====================================================
-    // 第二步：NanoBanana 图生图 (Compositions)
+    // 🎨 4. NanoBanana 绘制 (图生图)
     // =====================================================
     console.log(`🎨 [2/2] 正在绘制狗蛋... (参考图数量: ${referenceImages.length})`);
 
@@ -79,13 +93,12 @@ export async function POST(request: NextRequest) {
 
     const imgPayload = {
       model: "nanobananapro",
-      prompt: cleanPrompt, // 中文动作描述
-      images: referenceImages, // 👈 关键：传狗蛋的照片过去！
+      prompt: cleanPrompt, 
+      images: referenceImages, // 核心：发送狗蛋照片
       ratio: ratio,
-      // resolution: "4k", // ❌ 不传这个参数，默认就是 2K 左右，速度快且够用
+      // resolution: "4k", // 保持禁用，使用默认 2K
     };
 
-    // 注意：这里接口地址变成了 /v3/images/compositions
     const imgResponse = await fetch(`${IMG_HOST}/v3/images/compositions`, {
       method: 'POST',
       headers: {
@@ -99,7 +112,7 @@ export async function POST(request: NextRequest) {
     if (!imgResponse.ok) {
       const err = await imgResponse.text();
       console.error('❌ 生图接口报错:', err);
-      throw new Error(`生图失败: ${imgResponse.status}`);
+      throw new Error(`生图失败: ${imgResponse.status} - ${err}`);
     }
 
     const imgData = await imgResponse.json();
@@ -121,6 +134,7 @@ export async function POST(request: NextRequest) {
 
   } catch (error) {
     console.error('❌ 流程异常:', error);
+    // 这里会把具体的错误信息（比如缺了哪个 Key）返回给前端
     return NextResponse.json(
       { error: error instanceof Error ? error.message : '未知错误' },
       { status: 500 }
