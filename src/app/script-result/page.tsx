@@ -541,8 +541,12 @@ function ScriptResultContent() {
             <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
               <button
                 onClick={() => {
-                  // TODO: 进入下一步（视觉生成）
-                  alert('即将进入视觉生成环节...')
+                  // 获取当前活动平台的脚本内容作为 content
+                  const currentScript = scripts.scripts[activeTab as keyof typeof scripts.scripts]
+                  const content = currentScript?.content || ''
+                  
+                  // 跳转到视觉生成页面，传递参数
+                  router.push(`/visual-generation?title=${encodeURIComponent(title)}&content=${encodeURIComponent(content)}&angle=${encodeURIComponent(angle)}&platform=${encodeURIComponent(PLATFORM_CONFIG[activeTab as keyof typeof PLATFORM_CONFIG].name)}`)
                 }}
                 className={cn(
                   "flex items-center gap-3 px-8 py-4 rounded-2xl text-white font-bold",
