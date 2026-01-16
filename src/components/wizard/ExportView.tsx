@@ -64,7 +64,7 @@ export function ExportView() {
       {/* Back Button */}
       <button
         onClick={goBack}
-        className="group flex items-center gap-2 text-onion-muted hover:text-violet-600 transition-colors mb-6"
+        className="group flex items-center gap-2 text-onion-muted hover:text-onion-blue-600 transition-colors mb-6"
       >
         <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
         <span className="text-sm font-medium">返回视觉选择</span>
@@ -72,7 +72,7 @@ export function ExportView() {
 
       {/* Page Header */}
       <div className="text-center mb-10">
-        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-violet-500 to-purple-500 text-white text-sm font-medium mb-4 shadow-lg shadow-violet-500/25">
+        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-onion-blue-500 to-onion-blue-500 text-white text-sm font-medium mb-4 shadow-lg shadow-onion-blue-500/25">
           <CheckCircle2 className="w-4 h-4" />
           品牌合成 · 完成
         </div>
@@ -85,10 +85,10 @@ export function ExportView() {
       </div>
 
       {/* Main Preview */}
-      <div className="mb-8 rounded-3xl overflow-hidden shadow-2xl shadow-violet-500/20 border-4 border-white animate-slide-up">
+      <div className="mb-8 rounded-3xl overflow-hidden shadow-2xl shadow-onion-blue-500/20 border-4 border-white animate-slide-up">
         {/* Visual Preview */}
         <div className={cn(
-          "relative aspect-video bg-gradient-to-br from-violet-400 via-purple-400 to-pink-400",
+          "relative aspect-video bg-gradient-to-br from-onion-blue-400 via-onion-blue-400 to-pink-400",
         )}>
           {/* Mock Final Composition */}
           <div className="absolute inset-0 flex items-center justify-center">
@@ -98,11 +98,11 @@ export function ExportView() {
               
               {/* Title */}
               <div className="bg-white/90 backdrop-blur-sm rounded-2xl px-8 py-4 shadow-xl max-w-md mx-4">
-                <h2 className="text-lg font-bold text-violet-700 mb-2">
+                <h2 className="text-lg font-bold text-onion-blue-700 mb-2">
                   {selectedTrend?.title.slice(0, 30)}...
                 </h2>
                 <div className="flex items-center justify-center gap-2 text-sm text-onion-muted">
-                  <span className="px-2 py-0.5 bg-violet-100 rounded-full text-violet-600 text-xs font-medium">
+                  <span className="px-2 py-0.5 bg-onion-blue-100 rounded-full text-onion-blue-600 text-xs font-medium">
                     {selectedAngle?.type}
                   </span>
                   <span className="px-2 py-0.5 bg-pink-100 rounded-full text-pink-600 text-xs font-medium">
@@ -122,7 +122,7 @@ export function ExportView() {
           {/* Visual Style Badge */}
           {selectedVisual && (
             <div className="absolute top-4 left-4">
-              <span className="px-4 py-2 bg-white/90 backdrop-blur-sm rounded-full text-sm font-bold text-violet-700 shadow-lg">
+              <span className="px-4 py-2 bg-white/90 backdrop-blur-sm rounded-full text-sm font-bold text-onion-blue-700 shadow-lg">
                 {selectedVisual.style}
               </span>
             </div>
@@ -155,13 +155,13 @@ export function ExportView() {
           icon="🎨"
           label="视觉风格"
           value={selectedVisual?.style || '-'}
-          color="bg-violet-50 border-violet-200"
+          color="bg-onion-blue-50 border-onion-blue-200"
         />
       </div>
 
       {/* Script Preview & Copy */}
       {selectedScript && (
-        <div className="mb-8 p-6 rounded-2xl bg-white/80 border border-violet-200 shadow-sm animate-slide-up" style={{ animationDelay: '300ms' }}>
+        <div className="mb-8 p-6 rounded-2xl bg-white/80 border border-onion-blue-200 shadow-sm animate-slide-up" style={{ animationDelay: '300ms' }}>
           <div className="flex items-center justify-between mb-4">
             <h3 className="font-bold text-onion-text">📝 生成的文案</h3>
             <button
@@ -170,7 +170,7 @@ export function ExportView() {
                 "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all",
                 copied
                   ? "bg-green-100 text-green-700"
-                  : "bg-violet-100 text-violet-700 hover:bg-violet-200"
+                  : "bg-onion-blue-100 text-onion-blue-700 hover:bg-onion-blue-200"
               )}
             >
               {copied ? (
@@ -201,9 +201,9 @@ export function ExportView() {
           }}
           className={cn(
             "flex items-center gap-3 px-8 py-4 rounded-2xl text-white font-bold",
-            "bg-gradient-to-r from-violet-600 to-purple-600",
-            "shadow-xl shadow-violet-500/25",
-            "hover:shadow-2xl hover:shadow-violet-500/30 hover:-translate-y-0.5",
+            "bg-gradient-to-r from-onion-blue-600 to-onion-blue-600",
+            "shadow-xl shadow-onion-blue-500/25",
+            "hover:shadow-2xl hover:shadow-onion-blue-500/30 hover:-translate-y-0.5",
             "transition-all duration-300"
           )}
         >
@@ -218,8 +218,8 @@ export function ExportView() {
           }}
           className={cn(
             "flex items-center gap-3 px-6 py-4 rounded-2xl font-medium",
-            "bg-white border-2 border-violet-200 text-violet-700",
-            "hover:border-violet-400 hover:bg-violet-50",
+            "bg-white border-2 border-onion-blue-200 text-onion-blue-700",
+            "hover:border-onion-blue-400 hover:bg-onion-blue-50",
             "transition-all duration-300"
           )}
         >

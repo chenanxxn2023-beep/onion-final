@@ -27,10 +27,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="zh-CN" className={`${outfit.variable} ${notoSansSC.variable}`}>
-      <body className="min-h-screen bg-gradient-to-br from-violet-50 via-white to-purple-50 antialiased">
+      <body className="min-h-screen bg-gradient-to-br from-onion-blue-50 via-white to-onion-blue-50 antialiased">
         <div className="fixed inset-0 -z-10 overflow-hidden">
-          <div className="absolute -top-1/2 -right-1/2 w-full h-full bg-gradient-to-bl from-violet-200/30 via-transparent to-transparent rounded-full blur-3xl" />
-          <div className="absolute -bottom-1/2 -left-1/2 w-full h-full bg-gradient-to-tr from-purple-200/20 via-transparent to-transparent rounded-full blur-3xl" />
+          <div className="absolute -top-1/2 -right-1/2 w-full h-full bg-gradient-to-bl from-onion-blue-200/30 via-transparent to-transparent rounded-full blur-3xl" />
+          <div className="absolute -bottom-1/2 -left-1/2 w-full h-full bg-gradient-to-tr from-onion-blue-200/20 via-transparent to-transparent rounded-full blur-3xl" />
         </div>
         {children}
       </body>

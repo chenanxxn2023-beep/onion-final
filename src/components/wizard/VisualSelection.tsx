@@ -25,13 +25,13 @@ interface VisualCardProps {
 function VisualCard({ visual, onSelect, delay = 0 }: VisualCardProps) {
   // Generate placeholder gradient colors based on visual style
   const gradientMap: Record<string, string> = {
-    '2.5D 等距插画': 'from-violet-400 via-purple-400 to-pink-400',
+    '2.5D 等距插画': 'from-onion-blue-400 via-onion-blue-400 to-pink-400',
     '扁平矢量风': 'from-blue-400 via-cyan-400 to-teal-400',
     '卡通漫画风': 'from-orange-400 via-amber-400 to-yellow-400',
     '动态海报风': 'from-rose-400 via-red-400 to-orange-400',
   }
 
-  const gradient = gradientMap[visual.style] || 'from-violet-400 to-purple-400'
+  const gradient = gradientMap[visual.style] || 'from-onion-blue-400 to-onion-blue-400'
 
   return (
     <button
@@ -40,9 +40,9 @@ function VisualCard({ visual, onSelect, delay = 0 }: VisualCardProps) {
         "group relative w-full text-left rounded-2xl border-2 border-transparent overflow-hidden",
         "bg-white/80 backdrop-blur-sm shadow-sm",
         "transition-all duration-300 ease-out",
-        "hover:border-violet-300 hover:bg-white hover:shadow-xl hover:shadow-violet-500/15",
+        "hover:border-onion-blue-300 hover:bg-white hover:shadow-xl hover:shadow-onion-blue-500/15",
         "hover:-translate-y-2 hover:scale-[1.02]",
-        "focus:outline-none focus:ring-2 focus:ring-violet-500 focus:ring-offset-2",
+        "focus:outline-none focus:ring-2 focus:ring-onion-blue-500 focus:ring-offset-2",
         "animate-slide-up"
       )}
       style={{ animationDelay: `${delay}ms` }}
@@ -80,10 +80,10 @@ function VisualCard({ visual, onSelect, delay = 0 }: VisualCardProps) {
         </div>
 
         {/* Hover Overlay */}
-        <div className="absolute inset-0 bg-violet-900/0 group-hover:bg-violet-900/20 transition-colors flex items-center justify-center">
+        <div className="absolute inset-0 bg-onion-blue-900/0 group-hover:bg-onion-blue-900/20 transition-colors flex items-center justify-center">
           <div className="opacity-0 group-hover:opacity-100 transition-all transform scale-90 group-hover:scale-100">
             <div className="w-14 h-14 rounded-full bg-white shadow-xl flex items-center justify-center">
-              <Sparkles className="w-6 h-6 text-violet-600" />
+              <Sparkles className="w-6 h-6 text-onion-blue-600" />
             </div>
           </div>
         </div>
@@ -115,7 +115,7 @@ export function VisualSelection() {
       {/* Back Button */}
       <button
         onClick={goBack}
-        className="group flex items-center gap-2 text-onion-muted hover:text-violet-600 transition-colors mb-6"
+        className="group flex items-center gap-2 text-onion-muted hover:text-onion-blue-600 transition-colors mb-6"
       >
         <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
         <span className="text-sm font-medium">返回文案选择</span>
@@ -123,7 +123,7 @@ export function VisualSelection() {
 
       {/* Page Header */}
       <div className="text-center mb-10">
-        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-violet-100 text-violet-700 text-sm font-medium mb-4">
+        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-onion-blue-100 text-onion-blue-700 text-sm font-medium mb-4">
           <Palette className="w-4 h-4" />
           视觉转化 · Step 3
         </div>
@@ -137,21 +137,21 @@ export function VisualSelection() {
         {/* Context Pills */}
         <div className="flex flex-wrap items-center justify-center gap-2 px-4">
           {selectedTrend && (
-            <div className="inline-flex items-start gap-2 px-3 py-1.5 rounded-lg bg-white/60 border border-violet-200 text-xs max-w-full sm:max-w-sm h-auto">
-              <span className="text-violet-500 flex-shrink-0 mt-0.5">📰</span>
+            <div className="inline-flex items-start gap-2 px-3 py-1.5 rounded-lg bg-white/60 border border-onion-blue-200 text-xs max-w-full sm:max-w-sm h-auto">
+              <span className="text-onion-blue-500 flex-shrink-0 mt-0.5">📰</span>
               <span className="text-onion-text whitespace-normal break-words text-left">
                 {selectedTrend.title}
               </span>
             </div>
           )}
           {selectedAngle && (
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/60 border border-violet-200 text-xs">
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/60 border border-onion-blue-200 text-xs">
               <span>{selectedAngle.icon}</span>
               <span className="text-onion-text">{selectedAngle.type}</span>
             </div>
           )}
           {selectedScript && (
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/60 border border-violet-200 text-xs">
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/60 border border-onion-blue-200 text-xs">
               <span>{selectedScript.icon}</span>
               <span className="text-onion-text">{selectedScript.channel}</span>
             </div>
@@ -172,8 +172,8 @@ export function VisualSelection() {
       </div>
 
       {/* Style Tip */}
-      <div className="mt-8 p-4 rounded-xl bg-violet-50 border border-violet-100 text-center">
-        <p className="text-sm text-violet-700">
+      <div className="mt-8 p-4 rounded-xl bg-onion-blue-50 border border-onion-blue-100 text-center">
+        <p className="text-sm text-onion-blue-700">
           💡 <strong>洋葱风格</strong>: 2.5D 插画 · 明亮色彩 · 卡通形象 · 干货满满
         </p>
       </div>

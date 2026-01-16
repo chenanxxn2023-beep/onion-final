@@ -35,9 +35,9 @@ function StepIndicator({ currentStep }: StepIndicatorProps) {
             className={cn(
               "flex items-center gap-2 px-4 py-2 rounded-full transition-all duration-300",
               currentStep === step.id
-                ? "bg-violet-600 text-white shadow-lg shadow-violet-500/30 scale-105"
+                ? "bg-white text-onion-blue-600 shadow-lg shadow-onion-blue-500/30 scale-105 border-2 border-onion-blue-600 font-semibold"
                 : currentStep > step.id
-                ? "bg-violet-100 text-violet-600"
+                ? "bg-onion-blue-100 text-onion-blue-600"
                 : "bg-gray-100 text-gray-400"
             )}
           >
@@ -50,7 +50,7 @@ function StepIndicator({ currentStep }: StepIndicatorProps) {
             <div
               className={cn(
                 "w-6 sm:w-12 h-0.5 rounded-full transition-colors duration-300",
-                currentStep > step.id ? "bg-violet-400" : "bg-gray-200"
+                currentStep > step.id ? "bg-onion-blue-400" : "bg-gray-200"
               )}
             />
           )}

@@ -108,11 +108,10 @@ function TrendCard({ trend, onSelect, delay = 0 }: TrendCardProps) {
   return (
     <div
       className={cn(
-        "group w-full rounded-2xl border-2 border-transparent overflow-hidden",
+        "group w-full rounded-2xl border-2 border-onion-blue-200 overflow-hidden",
         "bg-white/70 backdrop-blur-sm shadow-sm",
         "transition-all duration-300 ease-out",
-        "hover:border-violet-300 hover:bg-white hover:shadow-lg hover:shadow-violet-500/10",
-        "hover:-translate-y-1",
+        "hover:border-onion-blue-400 hover:bg-white hover:shadow-lg hover:shadow-onion-blue-500/10",
         "animate-slide-up",
         "flex items-stretch"
       )}
@@ -138,8 +137,8 @@ function TrendCard({ trend, onSelect, delay = 0 }: TrendCardProps) {
           
           {/* K12 Badge */}
           {trend.is_k12_related && (
-            <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-gradient-to-r from-violet-100 to-purple-100 text-violet-700">
-              🎓 教育相关
+            <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-gradient-to-r from-onion-blue-100 to-onion-blue-200 text-onion-blue-700">
+              教育相关
             </span>
           )}
           
@@ -152,7 +151,7 @@ function TrendCard({ trend, onSelect, delay = 0 }: TrendCardProps) {
         </div>
 
         {/* Title */}
-        <h3 className="text-base font-semibold text-foreground leading-relaxed mb-3 group-hover:text-violet-700 transition-colors line-clamp-2">
+        <h3 className="text-base font-semibold text-foreground leading-relaxed mb-3 group-hover:text-onion-blue-700 transition-colors line-clamp-2">
           {trend.title}
         </h3>
 
@@ -177,38 +176,36 @@ function TrendCard({ trend, onSelect, delay = 0 }: TrendCardProps) {
           // 跳转到 AI 分析页面，传递标题参数
           router.push(`/select-angle?title=${encodeURIComponent(trend.title)}`)
         }}
+        style={{ backgroundColor: 'rgba(32, 178, 255, 0.8)' }}
         className={cn(
           "w-20 shrink-0 flex flex-col items-center justify-center gap-2",
-          "border-l-2 border-violet-100",
-          "bg-gradient-to-br from-violet-50 to-purple-50",
-          "hover:from-violet-100 hover:to-purple-100",
+          "border-l-2 border-onion-blue-200",
+          "hover:opacity-90",
           "transition-all duration-300",
           "group/ai"
         )}
       >
         {/* AI 分析图标 */}
         <div className="relative">
-          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center shadow-md group-hover/ai:shadow-lg group-hover/ai:scale-110 transition-all">
+          <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center shadow-md group-hover/ai:shadow-lg group-hover/ai:scale-110 transition-all">
             <svg 
-              className="w-5 h-5 text-white" 
+              className="w-5 h-5" 
               fill="none" 
-              stroke="currentColor" 
+              stroke="#0062cc"
+              strokeWidth="2"
+              strokeLinecap="round" 
+              strokeLinejoin="round"
               viewBox="0 0 24 24"
             >
-              <path 
-                strokeLinecap="round" 
-                strokeLinejoin="round" 
-                strokeWidth={2} 
-                d="M13 10V3L4 14h7v7l9-11h-7z" 
-              />
+              <path d="M13 10V3L4 14h7v7l9-11h-7z" />
             </svg>
           </div>
           {/* 闪烁效果 */}
-          <div className="absolute -top-1 -right-1 w-3 h-3 bg-yellow-400 rounded-full animate-pulse" />
+          <div className="absolute -top-1 -right-1 w-3 h-3 bg-yellow-400 rounded-full animate-pulse shadow-sm" />
         </div>
         
         {/* 文字标签 */}
-        <span className="text-xs font-bold text-violet-700 group-hover/ai:text-violet-900 transition-colors">
+        <span className="text-xs font-bold text-onion-blue-700 group-hover/ai:text-onion-blue-900 transition-colors">
           AI 分析
         </span>
       </button>
@@ -223,7 +220,7 @@ function TrendCard({ trend, onSelect, delay = 0 }: TrendCardProps) {
 function LoadingState() {
   return (
     <div className="flex flex-col items-center justify-center py-16">
-      <Loader2 className="w-10 h-10 text-violet-500 animate-spin mb-4" />
+      <Loader2 className="w-10 h-10 text-onion-blue-500 animate-spin mb-4" />
       <p className="text-muted-foreground font-medium">正在获取最新教育资讯...</p>
       <p className="text-sm text-muted-foreground mt-1">
         连接百度、微博、知乎、头条、B站等12个平台...
@@ -251,7 +248,7 @@ function ErrorState({ error, onRetry }: ErrorStateProps) {
       </p>
       <button
         onClick={onRetry}
-        className="flex items-center gap-2 px-6 py-2 rounded-lg bg-violet-600 text-white hover:bg-violet-700 transition-colors"
+        className="flex items-center gap-2 px-6 py-2 rounded-lg bg-onion-blue-600 text-white hover:bg-onion-blue-700 transition-colors"
       >
         <RefreshCw className="w-4 h-4" />
         重试
@@ -389,7 +386,7 @@ export function TrendDashboard() {
     return (
       <div className="w-full max-w-4xl mx-auto">
         <div className="text-center mb-10">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-violet-100 text-violet-700 text-sm font-medium mb-4">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-onion-blue-100 text-onion-blue-700 text-sm font-medium mb-4">
             <TrendingUp className="w-4 h-4" />
             热点雷达 · Trend Radar
           </div>
@@ -407,7 +404,7 @@ export function TrendDashboard() {
     return (
       <div className="w-full max-w-4xl mx-auto">
         <div className="text-center mb-10">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-violet-100 text-violet-700 text-sm font-medium mb-4">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-onion-blue-100 text-onion-blue-700 text-sm font-medium mb-4">
             <TrendingUp className="w-4 h-4" />
             热点雷达 · Trend Radar
           </div>
@@ -423,12 +420,12 @@ export function TrendDashboard() {
   return (
     <div className="w-full max-w-4xl mx-auto">
       {/* Page Header */}
-      <div className="text-center mb-6 mt-4">
-        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-violet-100 text-violet-700 text-sm font-medium mb-4">
+      <div className="text-center mb-4 mt-2">
+        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-onion-blue-100 text-onion-blue-700 text-sm font-medium mb-3">
           <TrendingUp className="w-4 h-4" />
           热点雷达 · Trend Radar
         </div>
-        <h1 className="text-3xl font-bold gradient-text mb-3 font-display">
+        <h1 className="text-3xl font-bold gradient-text mb-2 font-display">
           发现今日灵感
         </h1>
         <p className="text-muted-foreground max-w-md mx-auto mb-4">
@@ -449,8 +446,8 @@ export function TrendDashboard() {
           className={cn(
             "inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all",
             isRefreshing 
-              ? "bg-violet-100 text-violet-700 cursor-not-allowed"
-              : "bg-white border border-violet-200 text-violet-700 hover:bg-violet-50 hover:border-violet-300 hover:shadow-sm"
+              ? "bg-onion-blue-100 text-onion-blue-700 cursor-not-allowed"
+              : "bg-white border border-onion-blue-200 text-onion-blue-700 hover:bg-onion-blue-50 hover:border-onion-blue-300 hover:shadow-sm"
           )}
         >
           <RefreshCw className={cn("w-4 h-4", isRefreshing && "animate-spin")} />
@@ -477,7 +474,7 @@ export function TrendDashboard() {
         <TabsList className="w-full max-w-md mx-auto grid grid-cols-2 mb-4">
           <TabsTrigger value="k12" className="gap-2">
             <Calendar className="w-4 h-4" />
-            🎓 教育相关 ({k12Trends.length})
+            教育相关 ({k12Trends.length})
           </TabsTrigger>
           <TabsTrigger value="all" className="gap-2">
             <Zap className="w-4 h-4" />
@@ -488,8 +485,8 @@ export function TrendDashboard() {
         {/* K12 Education Trends（默认显示） */}
         <TabsContent value="k12">
           <section className="animate-fade-in pt-2">
-            <div className="mb-4 p-4 rounded-xl bg-violet-50 border border-violet-100">
-              <p className="text-sm text-violet-700">
+            <div className="mb-4 p-4 rounded-xl bg-onion-blue-50 border border-onion-blue-100">
+              <p className="text-sm text-onion-blue-700">
                 <strong>🎓 智能筛选</strong>：已自动识别包含教育关键词的热搜（教育、考试、学校、数学、高考等）
               </p>
             </div>
@@ -564,7 +561,7 @@ export function TrendDashboard() {
             href={REAL_API_URL}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-violet-600 hover:underline ml-1"
+            className="text-onion-blue-600 hover:underline ml-1"
           >
             TrendRadar 多源聚合
           </a>

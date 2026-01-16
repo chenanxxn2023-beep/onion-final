@@ -1,11 +1,13 @@
 'use client'
 
-import React, { useEffect, useState, Suspense } from 'react'
+import React, { useState, Suspense } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { Loader2, AlertCircle, ArrowLeft, FileText, RefreshCw, Copy, CheckCircle2 } from 'lucide-react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { cn } from '@/lib/utils'
+import { useCachedFetch } from '@/hooks/useCachedFetch'
+import { buildCacheKey, CacheType } from '@/lib/cache'
 
 // ============================================
 // 类型定义
@@ -51,8 +53,8 @@ const PLATFORM_CONFIG = {
     id: 'douyin',
     name: '抖快短视频',
     emoji: '📱',
-    color: 'text-gray-900',
-    bgColor: 'bg-gray-50',
+    color: 'text-onion-blue-700',
+    bgColor: 'bg-onion-blue-100',
     gradient: 'from-gray-700 to-black',
     description: '15-60秒短视频脚本',
   },
@@ -139,10 +141,10 @@ function ScriptCard({ platformKey, script, onRegenerate, isRegenerating }: Scrip
   }
 
   return (
-    <div className="h-full flex flex-col">
+    <div className="h-full flex flex-col border-2 border-onion-blue-200 rounded-2xl shadow-lg overflow-hidden">
       {/* 头部：平台信息 + 复制按钮 */}
       <div className={cn(
-        "flex items-center justify-between px-5 py-4 rounded-t-2xl border-b",
+        "flex items-center justify-between px-5 py-4 border-b",
         platform.bgColor
       )}>
         <div className="flex items-center gap-3">
@@ -165,10 +167,10 @@ function ScriptCard({ platformKey, script, onRegenerate, isRegenerating }: Scrip
             onClick={() => onRegenerate(platformKey)}
             disabled={isRegenerating}
             className={cn(
-              "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all",
+              "flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition-all border-2",
               isRegenerating
-                ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-                : "bg-violet-100 text-violet-700 hover:bg-violet-200"
+                ? "bg-gray-100 text-gray-400 cursor-not-allowed border-gray-200"
+                : "bg-onion-blue-100 text-onion-blue-700 hover:bg-onion-blue-200 border-onion-blue-300 hover:border-onion-blue-400 shadow-sm hover:shadow-md"
             )}
           >
             <RefreshCw className={cn("w-3.5 h-3.5", isRegenerating && "animate-spin")} />
@@ -180,12 +182,12 @@ function ScriptCard({ platformKey, script, onRegenerate, isRegenerating }: Scrip
             onClick={handleCopy}
             disabled={isRegenerating}
             className={cn(
-              "flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-all",
+              "flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-medium transition-all border-2",
               copied
-                ? "bg-green-100 text-green-700"
+                ? "bg-green-100 text-green-700 border-green-300 shadow-sm"
                 : isRegenerating
-                ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-                : `${platform.bgColor} ${platform.color} hover:opacity-80`
+                ? "bg-gray-100 text-gray-400 cursor-not-allowed border-gray-200"
+                : `${platform.bgColor} ${platform.color} hover:opacity-80 border-onion-blue-300 hover:border-onion-blue-400 shadow-sm hover:shadow-md`
             )}
           >
             {copied ? (
@@ -204,7 +206,7 @@ function ScriptCard({ platformKey, script, onRegenerate, isRegenerating }: Scrip
       </div>
 
       {/* 内容区域 */}
-      <div className="flex-1 p-5 bg-white rounded-b-2xl">
+      <div className="flex-1 p-5 bg-white">
         <ScrollArea className="h-96">
           {/* 标题 */}
           {script.title && (
@@ -237,37 +239,86 @@ function ScriptResultContent() {
   const title = searchParams.get('title') || ''
   const angle = searchParams.get('angle') || ''
 
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [scripts, setScripts] = useState<ScriptResponse['data']>(null)
+  // ========== 🎯 使用新的缓存系统 ==========
+  // 构建缓存 Key：基于 title 和 angle
+  const cacheKey = buildCacheKey(CacheType.COPY, title, angle)
+
+  // ✅ 使用 useCachedFetch Hook 自动处理缓存逻辑
+  // 当 title 或 angle 变化时，Hook 会自动：
+  // 1️⃣ 检查新组合的缓存
+  // 2️⃣ 如果有缓存，直接使用（不显示 loading）
+  // 3️⃣ 如果无缓存，才调用 API
+  const { data: scripts, loading, error, refetch } = useCachedFetch<ScriptResponse['data']>({
+    cacheKey,
+    fetcher: async () => {
+      if (!title || !angle) {
+        throw new Error('缺少必要参数')
+      }
+
+      console.log('📡 [P3] 发起 DeepSeek 脚本生成请求:', { title, angle })
+
+      const response = await fetch('/api/generate-script', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ title, angle }),
+      })
+
+      const data: ScriptResponse = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || `HTTP ${response.status}`)
+      }
+
+      if (!data.success || !data.data?.scripts) {
+        throw new Error('API 返回数据格式错误')
+      }
+
+      console.log('✅ [P3] DeepSeek 脚本生成成功')
+      
+      // 检查数据完整性
+      if (data.meta?.completeness === 'partial') {
+        console.warn(`⚠️ 部分平台生成失败: ${data.meta.error_count} 个`)
+      }
+      
+      // 打印性能日志
+      if (data.meta?.duration_ms) {
+        console.log(`⚡️ 生成耗时: ${data.meta.duration_ms}ms`)
+      }
+
+      return data.data
+    },
+    autoFetch: true,  // 组件加载时自动执行
+    onSuccess: (data) => {
+      console.log('✅ [P3] 脚本生成完成，已缓存:', Object.keys(data.scripts).length, '个平台')
+    },
+    onError: (error) => {
+      console.error('❌ [P3] 脚本生成失败:', error.message)
+    }
+  })
+
   const [activeTab, setActiveTab] = useState<string>('douyin')
   const [isPartial, setIsPartial] = useState(false)
   const [missingCount, setMissingCount] = useState(0)
   const [regeneratingPlatform, setRegeneratingPlatform] = useState<string | null>(null)
 
-  // 生成脚本（支持全平台或单平台）
-  const generateScripts = async (platform?: string) => {
-    if (!title || !angle) {
-      setError('缺少必要参数')
-      setLoading(false)
-      return
-    }
+  // 手动重新生成全部平台（忽略缓存）
+  const handleRegenerateAll = () => {
+    console.log('🔄 [P3] 手动触发：重新生成全部文案（忽略缓存）')
+    setIsPartial(false)
+    setMissingCount(0)
+    refetch(true)  // 参数 true 表示强制刷新
+  }
+  
+  // 重新生成单个平台
+  const handleRegeneratePlatform = async (platformKey: string) => {
+    if (!title || !angle || !scripts) return
 
-    const isSinglePlatform = !!platform
-
-    if (isSinglePlatform) {
-      setRegeneratingPlatform(platform)
-    } else {
-      setLoading(true)
-    }
-    setError(null)
+    setRegeneratingPlatform(platformKey)
 
     try {
-      console.log('📡 发起脚本生成请求:', { 
-        title, 
-        angle, 
-        platform: platform || '全部' 
-      })
+      console.log('📡 [P3] 重新生成单个平台:', platformKey)
 
       const response = await fetch('/api/generate-script', {
         method: 'POST',
@@ -277,7 +328,7 @@ function ScriptResultContent() {
         body: JSON.stringify({ 
           title, 
           angle,
-          ...(platform && { platform }) // 只有单平台时才传递 platform 参数
+          platform: platformKey  // 传递平台参数
         }),
       })
 
@@ -291,70 +342,43 @@ function ScriptResultContent() {
         throw new Error('API 返回数据格式错误')
       }
 
-      console.log('✅ 脚本生成成功')
+      console.log('✅ [P3] 单平台重新生成成功:', platformKey)
       
-      // 如果是单平台重新生成，合并数据
-      if (isSinglePlatform && scripts && platform) {
-        setScripts({
-          scripts: {
-            ...scripts.scripts,
-            [platform]: data.data!.scripts[platform as keyof typeof data.data.scripts],
-          }
-        })
-      } else {
-        // 全平台生成，直接替换
-        setScripts(data.data)
+      // 手动更新缓存：合并新数据
+      const updatedScripts = {
+        scripts: {
+          ...scripts.scripts,
+          [platformKey]: data.data.scripts[platformKey as keyof typeof data.data.scripts],
+        }
       }
       
-      // 检查数据完整性
-      if (data.meta?.completeness === 'partial') {
-        setIsPartial(true)
-        setMissingCount(data.meta.error_count || 0)
-        console.warn(`⚠️ 部分平台生成失败: ${data.meta.error_count} 个`)
-      } else if (!isSinglePlatform) {
-        // 只有全平台生成成功时才重置警告
-        setIsPartial(false)
-        setMissingCount(0)
-      }
+      // 直接设置到 localStorage 缓存
+      const { setCache } = await import('@/lib/cache')
+      setCache(cacheKey, updatedScripts)
       
-      // 打印性能日志
-      if (data.meta?.duration_ms) {
-        console.log(`⚡️ 生成耗时: ${data.meta.duration_ms}ms`)
-      }
+      // 触发 refetch 以更新 UI
+      refetch()
 
     } catch (err: any) {
-      console.error('❌ 脚本生成失败:', err)
-      if (!isSinglePlatform) {
-        setError(err.message || '生成失败，请稍后重试')
-      }
+      console.error('❌ [P3] 单平台重新生成失败:', err.message)
+      // 不阻断用户，继续允许操作其他平台
     } finally {
-      setLoading(false)
       setRegeneratingPlatform(null)
     }
   }
-  
-  // 重新生成单个平台
-  const handleRegeneratePlatform = (platformKey: string) => {
-    generateScripts(platformKey)
-  }
-
-  // 页面加载时自动生成
-  useEffect(() => {
-    generateScripts()
-  }, [title, angle])
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-violet-50 via-white to-purple-50">
+    <div className="min-h-screen bg-gradient-to-br from-onion-blue-50 via-white to-onion-blue-50">
       {/* 背景装饰 */}
       <div className="fixed inset-0 -z-10 overflow-hidden">
-        <div className="absolute -top-1/2 -right-1/2 w-full h-full bg-gradient-to-bl from-violet-200/30 via-transparent to-transparent rounded-full blur-3xl" />
+        <div className="absolute -top-1/2 -right-1/2 w-full h-full bg-gradient-to-bl from-onion-blue-200/30 via-transparent to-transparent rounded-full blur-3xl" />
       </div>
 
       <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 py-8">
         {/* 返回按钮 */}
         <button
           onClick={() => router.back()}
-          className="group flex items-center gap-2 text-muted-foreground hover:text-violet-600 transition-colors mb-6"
+          className="group flex items-center gap-2 text-muted-foreground hover:text-onion-blue-600 transition-colors mb-6"
         >
           <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
           <span className="text-sm font-medium">返回角度选择</span>
@@ -362,7 +386,7 @@ function ScriptResultContent() {
 
         {/* 页面标题 */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-violet-100 text-violet-700 text-sm font-medium mb-4">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-onion-blue-100 text-onion-blue-700 text-sm font-medium mb-4">
             <FileText className="w-4 h-4" />
             脚本生成 · Step 2
           </div>
@@ -373,16 +397,16 @@ function ScriptResultContent() {
           {/* 上下文信息 */}
           <div className="flex flex-wrap items-center justify-center gap-2 mb-4">
             {title && (
-              <div className="inline-flex items-start gap-2 px-3 py-1.5 rounded-lg bg-white/60 border border-violet-200 text-xs max-w-md h-auto">
-                <span className="text-violet-500 flex-shrink-0">📰</span>
+              <div className="inline-flex items-start gap-2 px-3 py-1.5 rounded-lg bg-white/60 border border-onion-blue-200 text-xs max-w-md h-auto">
+                <span className="text-onion-blue-500 flex-shrink-0">📰</span>
                 <span className="text-foreground whitespace-normal break-words text-left">
                   {title}
                 </span>
               </div>
             )}
             {angle && (
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/60 border border-violet-200 text-xs">
-                <span className="text-violet-500">💡</span>
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/60 border border-onion-blue-200 text-xs">
+                <span className="text-onion-blue-500">💡</span>
                 <span className="text-foreground">{angle}</span>
               </div>
             )}
@@ -393,7 +417,7 @@ function ScriptResultContent() {
         {loading && (
           <div className="max-w-4xl mx-auto">
             <div className="text-center mb-8">
-              <Loader2 className="w-12 h-12 text-violet-500 animate-spin mx-auto mb-4" />
+              <Loader2 className="w-12 h-12 text-onion-blue-500 animate-spin mx-auto mb-4" />
               <p className="text-lg font-medium text-foreground">
                 🤖 DeepSeek 正在为 5 个平台生成文案...
               </p>
@@ -416,11 +440,11 @@ function ScriptResultContent() {
               <AlertCircle className="w-16 h-16 text-red-500 mb-4" />
               <p className="text-lg font-medium text-foreground mb-2">生成失败</p>
               <p className="text-sm text-muted-foreground mb-6 text-center">
-                {error}
+                {error.message}
               </p>
               <button
-                onClick={generateScripts}
-                className="flex items-center gap-2 px-6 py-3 rounded-xl bg-violet-600 text-white hover:bg-violet-700 transition-colors font-medium"
+                onClick={handleRegenerateAll}
+                className="flex items-center gap-2 px-6 py-3 rounded-xl bg-onion-blue-600 text-white hover:bg-onion-blue-700 transition-colors font-medium"
               >
                 <RefreshCw className="w-4 h-4" />
                 重试
@@ -549,11 +573,8 @@ function ScriptResultContent() {
                   router.push(`/visual-generation?title=${encodeURIComponent(title)}&content=${encodeURIComponent(content)}&angle=${encodeURIComponent(angle)}&platform=${encodeURIComponent(PLATFORM_CONFIG[activeTab as keyof typeof PLATFORM_CONFIG].name)}`)
                 }}
                 className={cn(
-                  "flex items-center gap-3 px-8 py-4 rounded-2xl text-white font-bold",
-                  "bg-gradient-to-r from-violet-600 to-purple-600",
-                  "shadow-xl shadow-violet-500/25",
-                  "hover:shadow-2xl hover:shadow-violet-500/30 hover:-translate-y-0.5",
-                  "transition-all duration-300"
+                  "flex items-center gap-2 px-6 py-4 rounded-2xl font-medium transition-all duration-300",
+                  "bg-[#2295FE] border-2 border-[#2295FE] text-white hover:border-[#1a85ed] hover:bg-[#1a85ed] shadow-md hover:shadow-lg"
                 )}
               >
                 继续下一步
@@ -561,13 +582,13 @@ function ScriptResultContent() {
               </button>
 
               <button
-                onClick={() => generateScripts()}
+                onClick={handleRegenerateAll}
                 disabled={loading}
                 className={cn(
                   "flex items-center gap-2 px-6 py-4 rounded-2xl font-medium transition-all duration-300",
                   loading
-                    ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-                    : "bg-white border-2 border-violet-200 text-violet-700 hover:border-violet-400 hover:bg-violet-50"
+                    ? "bg-gray-100 text-gray-400 cursor-not-allowed border-2 border-gray-200"
+                    : "bg-[#2295FE] border-2 border-[#2295FE] text-white hover:border-[#1a85ed] hover:bg-[#1a85ed] shadow-md hover:shadow-lg"
                 )}
               >
                 <RefreshCw className={cn("w-4 h-4", loading && "animate-spin")} />
@@ -596,7 +617,7 @@ export default function ScriptResultPage() {
   return (
     <Suspense fallback={
       <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="w-8 h-8 text-violet-500 animate-spin" />
+        <Loader2 className="w-8 h-8 text-onion-blue-500 animate-spin" />
       </div>
     }>
       <ScriptResultContent />

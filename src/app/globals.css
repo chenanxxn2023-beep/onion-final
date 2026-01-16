@@ -4,25 +4,25 @@
 
 @layer base {
   :root {
-    --background: 270 100% 99%;
-    --foreground: 263 70% 15%;
+    --background: 204 100% 99%;
+    --foreground: 220 70% 15%;
     --card: 0 0% 100%;
-    --card-foreground: 263 70% 15%;
+    --card-foreground: 220 70% 15%;
     --popover: 0 0% 100%;
-    --popover-foreground: 263 70% 15%;
-    --primary: 262 83% 58%;
+    --popover-foreground: 220 70% 15%;
+    --primary: 204 97% 62%;      /* #3CA9FC */
     --primary-foreground: 0 0% 100%;
-    --secondary: 263 90% 76%;
-    --secondary-foreground: 263 70% 15%;
-    --muted: 260 30% 96%;
-    --muted-foreground: 260 10% 40%;
-    --accent: 263 90% 86%;
-    --accent-foreground: 263 70% 15%;
+    --secondary: 204 100% 63%;   /* #40a9ff */
+    --secondary-foreground: 220 70% 15%;
+    --muted: 204 30% 96%;
+    --muted-foreground: 204 10% 40%;
+    --accent: 204 100% 71%;      /* #69c0ff */
+    --accent-foreground: 220 70% 15%;
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
-    --border: 260 30% 90%;
-    --input: 260 30% 90%;
-    --ring: 262 83% 58%;
+    --border: 204 30% 90%;
+    --input: 204 30% 90%;
+    --ring: 204 97% 62%;
     --radius: 0.75rem;
   }
 }
@@ -43,34 +43,45 @@
   }
   
   .glass-card {
-    @apply bg-white/80 backdrop-blur-sm border border-violet-100 shadow-lg shadow-violet-500/5;
+    @apply bg-white/80 backdrop-blur-sm border shadow-lg;
+    border-color: #bae7ff;
+    box-shadow: 0 10px 15px -3px rgba(60, 169, 252, 0.05);
   }
   
   .gradient-text {
-    @apply bg-gradient-to-r from-violet-600 via-purple-600 to-violet-700 bg-clip-text text-transparent;
+    background: linear-gradient(to right, #007AFF, #3CA9FC, #0062cc);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
   }
   
   .hover-lift {
-    @apply transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-violet-500/10;
+    @apply transition-all duration-300 hover:-translate-y-1 hover:shadow-xl;
+  }
+  
+  .hover-lift:hover {
+    box-shadow: 0 20px 25px -5px rgba(60, 169, 252, 0.1);
   }
 }
 
-/* Custom scrollbar for violet theme */
+/* Custom scrollbar for onion blue theme */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  @apply bg-violet-50 rounded-full;
+  @apply rounded-full;
+  background-color: #e6f7ff;
 }
 
 ::-webkit-scrollbar-thumb {
-  @apply bg-violet-300 rounded-full;
+  @apply rounded-full;
+  background-color: #91d5ff;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  @apply bg-violet-400;
+  background-color: #40a9ff;
 }
 
 /* Smooth animations */

@@ -1,140 +1,127 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { IP_LIBRARY } from '@/lib/ip-library'; 
+import { IP_LIBRARY } from '@/lib/ip-library';
 
-export const maxDuration = 60; // 延长超时时间
-
-// ============================================
-// 🐶 最终版：狗蛋主演 + 深度诊断模式
-// ============================================
+export const maxDuration = 60; // 设置超时时间
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const { title, content, aspectRatio } = body;
 
-    // =====================================================
-    // 🕵️‍♀️ 1. 环境变量深度诊断 (报错会直接告诉你是缺了哪一个)
-    // =====================================================
-    const DS_KEY = process.env.DEEPSEEK_API_KEY;
-    const IMG_HOST = process.env.NEXT_PUBLIC_IMAGE_API_HOST;
-    const IMG_KEY = process.env.IMAGE_API_KEY;
-    const IMG_TENANT = process.env.IMAGE_TENANT_ID;
+    // ==========================================
+    // 1. 密钥与配置检查 (调试核心)
+    // ==========================================
+    
+    // 优先从环境变量获取，如果没有则使用空字符串(或在此处暂时硬编码用于测试)
+    const DS_KEY = process.env.DEEPSEEK_API_KEY || "sk-68af1d1391c04bf4be0929208d96692d";
+    const YUNAI_KEY = process.env.YUNAI_API_KEY || "sk-K2D9VCTOiOTS2gOsatyuxsovJAkG1fVx9U3ylHaY3dRn8euA";
+    const YUNAI_URL = process.env.YUNAI_BASE_URL || "https://yunai.chat";
 
-    const missingKeys = [];
-    if (!DS_KEY) missingKeys.push("DEEPSEEK_API_KEY");
-    if (!IMG_HOST) missingKeys.push("NEXT_PUBLIC_IMAGE_API_HOST");
-    if (!IMG_KEY) missingKeys.push("IMAGE_API_KEY");
+    // 打印调试日志 (在终端查看)
+    console.log("----------------------------------------");
+    console.log("🔧 配置检查:");
+    console.log(`- DeepSeek Key 长度: ${DS_KEY ? DS_KEY.length : 0}`);
+    console.log(`- YunAi Key 长度: ${YUNAI_KEY ? YUNAI_KEY.length : 0}`);
+    console.log(`- YunAi Base URL: ${YUNAI_URL}`);
+    console.log("----------------------------------------");
 
-    if (missingKeys.length > 0) {
-      const errorMsg = `❌ 致命错误: Vercel 环境变量缺失: ${missingKeys.join(", ")}`;
-      console.error(errorMsg);
-      throw new Error(errorMsg);
+    if (!YUNAI_KEY || YUNAI_KEY.length < 10) {
+      throw new Error("❌ 未检测到有效的 YUNAI_API_KEY，请检查 .env.local 文件并重启服务");
     }
 
-    // =====================================================
-    // 🖼️ 2. 准备狗蛋参考图
-    // =====================================================
+    // ==========================================
+    // 2. 准备参考图
+    // ==========================================
     const publicHost = process.env.NEXT_PUBLIC_HOST || 'https://onion-final-smlp.vercel.app';
+    const referenceImageObj = IP_LIBRARY[0];
+    let referenceImageUrl = referenceImageObj.src;
     
-    // 提取 IP 库的前 2 张图，并确保是绝对路径
-    const referenceImages = IP_LIBRARY.slice(0, 2).map(img => {
-      if (img.src.startsWith('http')) return img.src;
-      return `${publicHost}${img.src}`;
-    });
+    // 确保图片是绝对路径
+    if (!referenceImageUrl.startsWith('http')) {
+      const cleanSrc = referenceImageUrl.startsWith('/') ? referenceImageUrl : `/${referenceImageUrl}`;
+      referenceImageUrl = `${publicHost}${cleanSrc}`;
+    }
+    console.log(`🖼️ 参考图地址: ${referenceImageUrl}`);
 
-    console.log(`🐶 [1/2] 正在让 DeepSeek 设计狗蛋的动作 (中文)...`);
-
-    // =====================================================
-    // 🤖 3. DeepSeek 导演设计动作
-    // =====================================================
+    // ==========================================
+    // 3. DeepSeek 生成提示词
+    // ==========================================
+    console.log(`🐶 [1/2] DeepSeek 设计提示词...`);
     const dsResponse = await fetch('https://api.deepseek.com/chat/completions', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${DS_KEY}`
-      },
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${DS_KEY}` },
       body: JSON.stringify({
         model: "deepseek-chat",
         messages: [
-          {
-            role: "system",
-            content: "你是一个插画导演。请根据用户提供的文章内容，设计画面提示词。\n\n要求：\n1. 主角固定为'狗蛋' (一个可爱的卡通IP角色)。\n2. **必须使用中文**。\n3. 重点描述**狗蛋的动作、表情和姿态**，要生动有趣，贴合文章主题。\n4. 描述周围的环境氛围。\n5. 风格：高质量插画，色彩鲜艳。\n6. 字数控制在 60 字以内，不要太长。"
-          },
-          {
-            role: "user",
-            content: `标题：${title}\n内容片段：${content.substring(0, 200)}`
-          }
+          { role: "system", content: "你是一个插画导演。请根据文章内容，设计一段**中文**画面描述。主角是'狗蛋'，描述动作和场景，不要描述长相。字数80字以内。" },
+          { role: "user", content: `标题：${title}\n内容片段：${content.substring(0, 200)}` }
         ],
-        temperature: 0.8
+        temperature: 0.7
       })
     });
 
     if (!dsResponse.ok) {
-      const errText = await dsResponse.text();
-      throw new Error(`DeepSeek 调用失败: ${dsResponse.status} - ${errText}`);
+        const err = await dsResponse.text();
+        throw new Error(`DeepSeek Error (${dsResponse.status}): ${err}`);
     }
-
     const dsData = await dsResponse.json();
-    const actionPrompt = dsData.choices?.[0]?.message?.content || "";
-    const cleanPrompt = actionPrompt.replace(/[\n\r]/g, " ").trim();
+    const prompt = dsData.choices?.[0]?.message?.content?.replace(/[\n\r]/g, " ").trim() || "可爱的狗蛋";
+    console.log(`✨ 提示词: ${prompt}`);
 
-    console.log(`✨ 动作设计: ${cleanPrompt}`);
-
-    // =====================================================
-    // 🎨 4. NanoBanana 绘制 (图生图)
-    // =====================================================
-    console.log(`🎨 [2/2] 正在绘制狗蛋... (参考图数量: ${referenceImages.length})`);
-
-    // 映射比例
-    let ratio = "1:1";
-    if (aspectRatio === '16:9') ratio = "16:9";
-    if (aspectRatio === '9:16') ratio = "9:16";
-    if (aspectRatio === '3:4') ratio = "3:4";
-
-    const imgPayload = {
-      model: "nanobananapro",
-      prompt: cleanPrompt, 
-      images: referenceImages, // 核心：发送狗蛋照片
-      ratio: ratio,
-      // resolution: "4k", // 保持禁用，使用默认 2K
+    // ==========================================
+    // 4. 调用凌云 API (即梦)
+    // ==========================================
+    console.log(`🎨 [2/2] 调用即梦生图...`);
+    
+    let size = "2048x2048"; 
+    if (aspectRatio === '16:9') size = "2560x1440";
+    if (aspectRatio === '9:16') size = "1440x2560";
+    if (aspectRatio === '3:4') size = "1728x2304"; 
+    if (aspectRatio === '4:3') size = "2304x1728";
+    
+    // 凌云 API 参数构造
+    const payload = {
+      model: "doubao-seedream-4-0-250828",
+      prompt: prompt,
+      image: [referenceImageUrl], // 必须是数组
+      size: size,
+      sequential_image_generation: "disabled", // 关闭组图，只生一张
+      response_format: "url",
+      watermark: false
     };
 
-    const imgResponse = await fetch(`${IMG_HOST}/v3/images/compositions`, {
+    const yunaiResponse = await fetch(`${YUNAI_URL}/v1/images/generations`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${IMG_KEY}`,
-        'TenantId': IMG_TENANT || '000000'
+        'Authorization': `Bearer ${YUNAI_KEY}`
       },
-      body: JSON.stringify(imgPayload)
+      body: JSON.stringify(payload)
     });
 
-    if (!imgResponse.ok) {
-      const err = await imgResponse.text();
-      console.error('❌ 生图接口报错:', err);
-      throw new Error(`生图失败: ${imgResponse.status} - ${err}`);
+    if (!yunaiResponse.ok) {
+      const errText = await yunaiResponse.text();
+      console.error('API Error:', errText);
+      throw new Error(`凌云API报错 (${yunaiResponse.status}): ${errText}`);
     }
 
-    const imgData = await imgResponse.json();
+    const result = await yunaiResponse.json();
+    const imageUrl = result.data?.[0]?.url;
 
-    if (imgData.code !== 200) {
-      console.error('❌ 业务报错:', imgData);
-      throw new Error(`API报错: ${imgData.msg}`);
+    if (!imageUrl) {
+      console.error("API返回异常数据:", JSON.stringify(result));
+      throw new Error('API 返回成功但未找到图片 URL');
     }
 
-    const imageUrl = imgData.data?.data?.[0]?.url;
-    if (!imageUrl) throw new Error('未返回图片URL');
-
-    console.log('✅ 狗蛋新图生成成功:', imageUrl);
+    console.log('✅ 生图成功:', imageUrl);
 
     return NextResponse.json({
       imageUrl,
-      aspectRatio: ratio
+      aspectRatio: aspectRatio
     });
 
   } catch (error) {
     console.error('❌ 流程异常:', error);
-    // 这里会把具体的错误信息（比如缺了哪个 Key）返回给前端
     return NextResponse.json(
       { error: error instanceof Error ? error.message : '未知错误' },
       { status: 500 }

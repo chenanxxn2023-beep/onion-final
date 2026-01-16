@@ -44,26 +44,26 @@ const config: Config = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
-        // Violet/Purple Theme for Onion Brand
-        violet: {
-          50: '#f5f3ff',
-          100: '#ede9fe',
-          200: '#ddd6fe',
-          300: '#c4b5fd',
-          400: '#a78bfa',
-          500: '#8b5cf6',
-          600: '#7c3aed',
-          700: '#6d28d9',
-          800: '#5b21b6',
-          900: '#4c1d95',
-          950: '#2e1065',
+        // Onion Blue Theme (based on logo color #3CA9FC)
+        'onion-blue': {
+          50: '#e6f7ff',
+          100: '#bae7ff',
+          200: '#91d5ff',
+          300: '#69c0ff',
+          400: '#40a9ff',
+          500: '#3CA9FC',  // Main onion logo blue
+          600: '#007AFF',  // Darker blue for hover/borders
+          700: '#0062cc',
+          800: '#004c99',
+          900: '#003a75',
+          950: '#002952',
         },
-        // Onion Brand Colors
+        // Onion Brand Colors (Updated to Blue Theme)
         onion: {
-          primary: '#7c3aed',
-          secondary: '#a78bfa',
-          accent: '#c4b5fd',
-          background: '#faf5ff',
+          primary: '#3CA9FC',     // Main blue
+          secondary: '#40a9ff',   // Light blue
+          accent: '#69c0ff',      // Lighter blue
+          background: '#e6f7ff',  // Very light blue
           surface: '#ffffff',
           text: '#1e1b4b',
           muted: '#6b7280',

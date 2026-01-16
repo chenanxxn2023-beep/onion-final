@@ -1,9 +1,10 @@
 'use client'
 
-import React, { Suspense, useState } from 'react'
+import React, { Suspense, useState, useEffect } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { ArrowLeft, Sparkles, Download, Loader2, Image as ImageIcon, CheckCircle2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { useWizardStore, useGeneratedImage } from '@/store/useWizardStore'
 
 // ============================================
 // 比例选项配置 (8种SDXL推荐比例)
@@ -83,47 +84,53 @@ function AspectRatioCard({ ratio, isSelected, onClick }: AspectRatioCardProps) {
   return (
     <button
       onClick={onClick}
+      style={isSelected ? { backgroundColor: 'rgba(34, 149, 254, 1)' } : undefined}
       className={cn(
         "relative p-4 rounded-xl border-2 transition-all duration-200 text-left",
         "hover:shadow-md hover:-translate-y-0.5",
         isSelected
-          ? "border-violet-600 bg-violet-600 text-white shadow-lg shadow-violet-500/25"
-          : "border-gray-300 bg-white hover:border-violet-400"
+          ? "border-onion-blue-600 text-white shadow-lg shadow-onion-blue-500/25"
+          : "border-gray-300 bg-white hover:border-onion-blue-400"
       )}
     >
       {/* 选中标记 */}
       {isSelected && (
         <div className="absolute top-2 right-2">
-          <CheckCircle2 className="w-4 h-4 text-white" />
+          <CheckCircle2 className="w-5 h-5 text-white drop-shadow-lg" />
         </div>
       )}
 
       {/* 图标 */}
-      <div className="text-2xl mb-2">{ratio.icon}</div>
+      <div className={cn(
+        "text-3xl mb-2",
+        isSelected && "drop-shadow-lg"
+      )}>
+        {ratio.icon}
+      </div>
 
       {/* 标签 */}
       <div className={cn(
-        "font-bold text-base mb-1",
-        isSelected ? "text-white" : "text-foreground"
+        "font-extrabold text-lg mb-1",
+        isSelected ? "text-white drop-shadow-md" : "text-foreground"
       )}>
         {ratio.label}
       </div>
       <div className={cn(
-        "text-xs font-medium mb-1",
-        isSelected ? "text-violet-100" : "text-violet-600"
+        "text-sm font-bold mb-1",
+        isSelected ? "text-white drop-shadow-md" : "text-onion-blue-600"
       )}>
         {ratio.description}
       </div>
       <div className={cn(
-        "text-xs",
-        isSelected ? "text-violet-100" : "text-muted-foreground"
+        "text-xs font-medium",
+        isSelected ? "text-white/90 drop-shadow-sm" : "text-muted-foreground"
       )}>
         {ratio.example}
       </div>
 
       {/* 推荐标签 */}
       {ratio.isDefault && !isSelected && (
-        <div className="absolute top-2 right-2 px-2 py-0.5 bg-violet-100 text-violet-600 text-xs font-bold rounded-full">
+        <div className="absolute top-2 right-2 px-2 py-0.5 bg-onion-blue-100 text-onion-blue-600 text-xs font-bold rounded-full">
           推荐
         </div>
       )}
@@ -162,7 +169,7 @@ function LoadingAnimation() {
 
       {/* 进度条 */}
       <div className="w-64 h-2 bg-gray-200 rounded-full overflow-hidden">
-        <div className="h-full bg-gradient-to-r from-violet-500 to-purple-500 animate-loading-bar" />
+        <div className="h-full bg-gradient-to-r from-onion-blue-500 to-onion-blue-500 animate-loading-bar" />
       </div>
     </div>
   )
@@ -181,10 +188,25 @@ function VisualGenerationContent() {
   const angle = searchParams.get('angle') || ''
   const platform = searchParams.get('platform') || ''
 
-  const [selectedRatio, setSelectedRatio] = useState('3:4')
+  // ========== 从 Store 获取缓存数据 ==========
+  const cachedImage = useGeneratedImage()
+  const setGeneratedImageToStore = useWizardStore((state) => state.setGeneratedImage)
+
+  const [selectedRatio, setSelectedRatio] = useState(cachedImage.aspectRatio || '3:4')
   const [isGenerating, setIsGenerating] = useState(false)
-  const [generatedImage, setGeneratedImage] = useState<string | null>(null)
+  const [generatedImage, setGeneratedImage] = useState<string | null>(cachedImage.imageUrl)
   const [error, setError] = useState<string | null>(null)
+
+  // ========== 监听缓存变化，自动恢复状态 ==========
+  useEffect(() => {
+    if (cachedImage.imageUrl) {
+      console.log('✅ 发现缓存图片，自动加载:', cachedImage.imageUrl.substring(0, 50) + '...')
+      setGeneratedImage(cachedImage.imageUrl)
+      if (cachedImage.aspectRatio) {
+        setSelectedRatio(cachedImage.aspectRatio)
+      }
+    }
+  }, [])
 
   // 生成图片
   const handleGenerate = async () => {
@@ -225,6 +247,9 @@ function VisualGenerationContent() {
 
       console.log('✅ 图片生成成功:', data.imageUrl)
       setGeneratedImage(data.imageUrl)
+      
+      // ✅ 保存到 Store（缓存）
+      setGeneratedImageToStore(data.imageUrl, selectedRatio)
 
     } catch (err: any) {
       console.error('❌ 图片生成失败:', err)
@@ -266,17 +291,17 @@ function VisualGenerationContent() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-violet-50 via-white to-purple-50">
+    <div className="min-h-screen bg-gradient-to-br from-onion-blue-50 via-white to-onion-blue-50">
       {/* 背景装饰 */}
       <div className="fixed inset-0 -z-10 overflow-hidden">
-        <div className="absolute -top-1/2 -right-1/2 w-full h-full bg-gradient-to-bl from-violet-200/30 via-transparent to-transparent rounded-full blur-3xl" />
+        <div className="absolute -top-1/2 -right-1/2 w-full h-full bg-gradient-to-bl from-onion-blue-200/30 via-transparent to-transparent rounded-full blur-3xl" />
       </div>
 
       <div className="max-w-5xl mx-auto px-4 md:px-6 lg:px-8 py-8">
         {/* 返回按钮 */}
         <button
           onClick={() => router.back()}
-          className="group flex items-center gap-2 text-muted-foreground hover:text-violet-600 transition-colors mb-6"
+          className="group flex items-center gap-2 text-muted-foreground hover:text-onion-blue-600 transition-colors mb-6"
         >
           <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
           <span className="text-sm font-medium">返回文案选择</span>
@@ -284,7 +309,7 @@ function VisualGenerationContent() {
 
         {/* 页面标题 */}
         <div className="text-center mb-10">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-violet-100 text-violet-700 text-sm font-medium mb-4">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-onion-blue-100 text-onion-blue-700 text-sm font-medium mb-4">
             <Sparkles className="w-4 h-4" />
             视觉生成 · Step 3
           </div>
@@ -298,16 +323,16 @@ function VisualGenerationContent() {
           {/* 上下文信息 */}
           <div className="flex flex-wrap items-center justify-center gap-2">
             {title && (
-              <div className="inline-flex items-start gap-2 px-3 py-1.5 rounded-lg bg-white/60 border border-violet-200 text-xs max-w-md">
-                <span className="text-violet-500 flex-shrink-0">📰</span>
+              <div className="inline-flex items-start gap-2 px-3 py-1.5 rounded-lg bg-white/60 border border-onion-blue-200 text-xs max-w-md">
+                <span className="text-onion-blue-500 flex-shrink-0">📰</span>
                 <span className="text-foreground whitespace-normal break-words text-left">
                   {title}
                 </span>
               </div>
             )}
             {platform && (
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/60 border border-violet-200 text-xs">
-                <span className="text-violet-500">📱</span>
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/60 border border-onion-blue-200 text-xs">
+                <span className="text-onion-blue-500">📱</span>
                 <span className="text-foreground">{platform}</span>
               </div>
             )}
@@ -320,7 +345,7 @@ function VisualGenerationContent() {
           {!generatedImage && !isGenerating && (
             <div className="mb-8 animate-slide-up">
               <h2 className="text-lg font-bold text-foreground mb-4 flex items-center gap-2">
-                <ImageIcon className="w-5 h-5 text-violet-600" />
+                <ImageIcon className="w-5 h-5 text-onion-blue-600" />
                 选择图片比例
                 <span className="text-xs font-normal text-muted-foreground ml-2">
                   (SDXL 推荐分辨率)
@@ -347,9 +372,9 @@ function VisualGenerationContent() {
                 disabled={!title || !content}
                 className={cn(
                   "flex items-center gap-3 px-10 py-5 rounded-2xl text-white font-bold text-lg mx-auto",
-                  "bg-gradient-to-r from-violet-600 to-purple-600",
-                  "shadow-xl shadow-violet-500/25",
-                  "hover:shadow-2xl hover:shadow-violet-500/30 hover:-translate-y-1",
+                  "bg-[rgba(34,149,254,1)]",
+                  "shadow-xl shadow-onion-blue-500/25",
+                  "hover:shadow-2xl hover:shadow-onion-blue-500/30 hover:-translate-y-1",
                   "transition-all duration-300",
                   "disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0"
                 )}
@@ -365,7 +390,7 @@ function VisualGenerationContent() {
 
           {/* 加载状态 */}
           {isGenerating && (
-            <div className="bg-white/80 rounded-3xl p-8 border border-violet-200 shadow-lg animate-fade-in">
+            <div className="bg-white/80 rounded-3xl p-8 border border-onion-blue-200 shadow-lg animate-fade-in">
               <LoadingAnimation />
             </div>
           )}
@@ -417,7 +442,7 @@ function VisualGenerationContent() {
               </div>
 
               {/* 图片展示 */}
-              <div className="relative mb-6 rounded-3xl overflow-hidden shadow-2xl shadow-violet-500/20 border-4 border-white bg-white">
+              <div className="relative mb-6 rounded-3xl overflow-hidden shadow-2xl shadow-onion-blue-500/20 border-4 border-white bg-white">
                 <img
                   src={generatedImage}
                   alt="生成的海报"
@@ -430,11 +455,12 @@ function VisualGenerationContent() {
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
                 <button
                   onClick={handleDownload}
+                  style={{ backgroundColor: 'rgba(44, 156, 252, 1)' }}
                   className={cn(
                     "flex items-center gap-3 px-8 py-4 rounded-2xl text-white font-bold",
-                    "bg-gradient-to-r from-violet-600 to-purple-600",
-                    "shadow-xl shadow-violet-500/25",
-                    "hover:shadow-2xl hover:shadow-violet-500/30 hover:-translate-y-0.5",
+                    "bg-gradient-to-r from-onion-blue-600 to-onion-blue-600",
+                    "shadow-xl shadow-onion-blue-500/25",
+                    "hover:shadow-2xl hover:shadow-onion-blue-500/30 hover:-translate-y-0.5",
                     "transition-all duration-300"
                   )}
                 >
@@ -444,13 +470,16 @@ function VisualGenerationContent() {
 
                 <button
                   onClick={() => {
+                    console.log('🔄 手动触发：重新生成图片')
                     setGeneratedImage(null)
                     setError(null)
+                    // 清除缓存
+                    setGeneratedImageToStore(null, null)
                   }}
                   className={cn(
                     "flex items-center gap-2 px-6 py-4 rounded-2xl font-medium",
-                    "bg-white border-2 border-violet-200 text-violet-700",
-                    "hover:border-violet-400 hover:bg-violet-50",
+                    "bg-white border-2 border-onion-blue-200 text-onion-blue-700",
+                    "hover:border-onion-blue-400 hover:bg-onion-blue-50",
                     "transition-all duration-300"
                   )}
                 >
@@ -548,7 +577,7 @@ export default function VisualGenerationPage() {
   return (
     <Suspense fallback={
       <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="w-8 h-8 text-violet-500 animate-spin" />
+        <Loader2 className="w-8 h-8 text-onion-blue-500 animate-spin" />
       </div>
     }>
       <VisualGenerationContent />

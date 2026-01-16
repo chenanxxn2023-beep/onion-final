@@ -33,6 +33,17 @@ export interface Script {
   icon: string
 }
 
+// 生成的脚本数据结构（对应 API 返回）
+export interface GeneratedScripts {
+  scripts: {
+    douyin: { title: string; content: string }
+    bilibili: { title: string; content: string }
+    xiaohongshu: { title: string; content: string }
+    wechat: { title: string; content: string }
+    weibo: { title: string; content: string }
+  }
+}
+
 export interface Visual {
   id: string
   style: string
@@ -227,6 +238,16 @@ interface WizardState {
   selectedScript: Script | null
   selectedVisual: Visual | null
   
+  // ========== 新增：缓存生成的内容 ==========
+  // Step 1: 分析的角度数据（缓存）+ 对应的标题
+  analyzedAngles: Array<{ title: string; content: string }> | null
+  analyzedAnglesTitle: string | null  // 记录是哪个标题的分析结果
+  // Step 2: 生成的脚本数据（缓存） - 支持多个角度的缓存
+  generatedScriptsCache: Record<string, GeneratedScripts>  // key: "标题::角度", value: 脚本数据
+  // Step 3: 生成的图片 URL（缓存）
+  generatedImageUrl: string | null
+  generatedImageRatio: string | null
+  
   // Actions
   setStep: (step: WizardStep) => void
   setTrends: (trends: Trend[]) => void
@@ -236,6 +257,15 @@ interface WizardState {
   selectAngle: (angle: Angle) => void
   selectScript: (script: Script) => void
   selectVisual: (visual: Visual) => void
+  
+  // ========== 新增：缓存管理 ==========
+  setAnalyzedAngles: (angles: Array<{ title: string; content: string }> | null, title?: string | null) => void
+  setGeneratedScripts: (scripts: GeneratedScripts, cacheKey: string) => void
+  getGeneratedScripts: (cacheKey: string) => GeneratedScripts | null
+  clearScriptsCache: () => void
+  setGeneratedImage: (imageUrl: string | null, aspectRatio?: string | null) => void
+  clearGeneratedData: () => void
+  
   reset: () => void
   goBack: () => void
 }
@@ -249,6 +279,12 @@ const initialState = {
   selectedAngle: null,
   selectedScript: null,
   selectedVisual: null,
+  // 新增：缓存数据
+  analyzedAngles: null as Array<{ title: string; content: string }> | null,
+  analyzedAnglesTitle: null as string | null,
+  generatedScriptsCache: {} as Record<string, GeneratedScripts>,  // 支持多个角度的缓存
+  generatedImageUrl: null as string | null,
+  generatedImageRatio: null as string | null,
 }
 
 export const useWizardStore = create<WizardState>((set, get) => ({
@@ -278,6 +314,57 @@ export const useWizardStore = create<WizardState>((set, get) => ({
     set({ selectedVisual: visual, currentStep: 4 })
   },
 
+  // ========== 新增：缓存管理函数 ==========
+  setAnalyzedAngles: (angles, title = null) => {
+    set({ 
+      analyzedAngles: angles,
+      analyzedAnglesTitle: title
+    })
+  },
+
+  // 保存脚本到缓存（支持多个角度）
+  setGeneratedScripts: (scripts, cacheKey) => {
+    const { generatedScriptsCache } = get()
+    set({ 
+      generatedScriptsCache: {
+        ...generatedScriptsCache,
+        [cacheKey]: scripts
+      }
+    })
+    console.log(`💾 [缓存] 保存脚本数据: ${cacheKey}`)
+  },
+
+  // 获取指定角度的脚本缓存
+  getGeneratedScripts: (cacheKey) => {
+    const { generatedScriptsCache } = get()
+    const cached = generatedScriptsCache[cacheKey] || null
+    console.log(`🔍 [缓存] 查询脚本数据: ${cacheKey} - ${cached ? '✅ 找到' : '❌ 未找到'}`)
+    return cached
+  },
+
+  // 清除所有脚本缓存
+  clearScriptsCache: () => {
+    set({ generatedScriptsCache: {} })
+    console.log('🗑️ [缓存] 清除所有脚本缓存')
+  },
+
+  setGeneratedImage: (imageUrl, aspectRatio = null) => {
+    set({ 
+      generatedImageUrl: imageUrl, 
+      generatedImageRatio: aspectRatio 
+    })
+  },
+
+  clearGeneratedData: () => {
+    set({ 
+      analyzedAngles: null,
+      analyzedAnglesTitle: null,
+      generatedScriptsCache: {},
+      generatedImageUrl: null,
+      generatedImageRatio: null
+    })
+  },
+
   goBack: () => {
     const { currentStep } = get()
     if (currentStep > 0) {
@@ -297,3 +384,16 @@ export const useSelectedTrend = () => useWizardStore((state) => state.selectedTr
 export const useSelectedAngle = () => useWizardStore((state) => state.selectedAngle)
 export const useSelectedScript = () => useWizardStore((state) => state.selectedScript)
 export const useSelectedVisual = () => useWizardStore((state) => state.selectedVisual)
+
+// 新增：缓存数据的 selector hooks
+export const useAnalyzedAngles = () => useWizardStore((state) => ({
+  angles: state.analyzedAngles,
+  title: state.analyzedAnglesTitle
+}))
+
+// 不再需要单独的 selector，直接使用 getGeneratedScripts 方法
+
+export const useGeneratedImage = () => useWizardStore((state) => ({
+  imageUrl: state.generatedImageUrl,
+  aspectRatio: state.generatedImageRatio
+}))

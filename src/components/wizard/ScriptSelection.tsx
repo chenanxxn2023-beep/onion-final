@@ -36,8 +36,8 @@ function ScriptCard({ script, onSelect, delay = 0 }: ScriptCardProps) {
     },
     '短视频分镜': {
       icon: <Video className="w-5 h-5" />,
-      gradient: 'from-violet-500 to-purple-500',
-      bgColor: 'bg-violet-50',
+      gradient: 'from-onion-blue-500 to-onion-blue-500',
+      bgColor: 'bg-onion-blue-50',
     },
   }
 
@@ -54,9 +54,9 @@ function ScriptCard({ script, onSelect, delay = 0 }: ScriptCardProps) {
         "group relative w-full h-full text-left flex flex-col rounded-2xl border-2 border-transparent overflow-hidden",
         "bg-white/80 backdrop-blur-sm shadow-sm",
         "transition-all duration-300 ease-out",
-        "hover:border-violet-300 hover:bg-white hover:shadow-xl hover:shadow-violet-500/15",
+        "hover:border-onion-blue-300 hover:bg-white hover:shadow-xl hover:shadow-onion-blue-500/15",
         "hover:-translate-y-1",
-        "focus:outline-none focus:ring-2 focus:ring-violet-500 focus:ring-offset-2",
+        "focus:outline-none focus:ring-2 focus:ring-onion-blue-500 focus:ring-offset-2",
         "animate-slide-up"
       )}
       style={{ animationDelay: `${delay}ms` }}
@@ -72,7 +72,7 @@ function ScriptCard({ script, onSelect, delay = 0 }: ScriptCardProps) {
           </div>
           <div>
             <div className="text-xs text-onion-muted mb-0.5">{script.channel}</div>
-            <h3 className="font-bold text-onion-text group-hover:text-violet-700 transition-colors">
+            <h3 className="font-bold text-onion-text group-hover:text-onion-blue-700 transition-colors">
               {script.title}
             </h3>
           </div>
@@ -92,7 +92,7 @@ function ScriptCard({ script, onSelect, delay = 0 }: ScriptCardProps) {
       <div className="px-5 py-3 border-t border-gray-100 bg-gray-50/50">
         <div className="flex items-center justify-between">
           <span className="text-xs text-onion-muted">点击选择此文案</span>
-          <div className="w-8 h-8 rounded-full bg-violet-100 flex items-center justify-center text-violet-500 opacity-0 group-hover:opacity-100 transition-opacity">
+          <div className="w-8 h-8 rounded-full bg-onion-blue-100 flex items-center justify-center text-onion-blue-500 opacity-0 group-hover:opacity-100 transition-opacity">
             →
           </div>
         </div>
@@ -116,7 +116,7 @@ export function ScriptSelection() {
       {/* Back Button */}
       <button
         onClick={goBack}
-        className="group flex items-center gap-2 text-onion-muted hover:text-violet-600 transition-colors mb-6"
+        className="group flex items-center gap-2 text-onion-muted hover:text-onion-blue-600 transition-colors mb-6"
       >
         <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
         <span className="text-sm font-medium">返回角度选择</span>
@@ -124,7 +124,7 @@ export function ScriptSelection() {
 
       {/* Page Header */}
       <div className="text-center mb-10">
-        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-violet-100 text-violet-700 text-sm font-medium mb-4">
+        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-onion-blue-100 text-onion-blue-700 text-sm font-medium mb-4">
           <FileText className="w-4 h-4" />
           脚本生成 · Step 2
         </div>
@@ -138,15 +138,15 @@ export function ScriptSelection() {
         {/* Context Pills */}
         <div className="flex flex-wrap items-center justify-center gap-2 px-4">
           {selectedTrend && (
-            <div className="inline-flex items-start gap-2 px-3 py-1.5 rounded-lg bg-white/60 border border-violet-200 text-xs max-w-full sm:max-w-md h-auto">
-              <span className="text-violet-500 flex-shrink-0 mt-0.5">📰</span>
+            <div className="inline-flex items-start gap-2 px-3 py-1.5 rounded-lg bg-white/60 border border-onion-blue-200 text-xs max-w-full sm:max-w-md h-auto">
+              <span className="text-onion-blue-500 flex-shrink-0 mt-0.5">📰</span>
               <span className="text-onion-text whitespace-normal break-words text-left">
                 {selectedTrend.title}
               </span>
             </div>
           )}
           {selectedAngle && (
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/60 border border-violet-200 text-xs">
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/60 border border-onion-blue-200 text-xs">
               <span>{selectedAngle.icon}</span>
               <span className="text-onion-text">{selectedAngle.type}</span>
             </div>
